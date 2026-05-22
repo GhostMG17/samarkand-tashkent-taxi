@@ -1,5 +1,6 @@
 package com.uz.taxi.samarkand_tashkent.domain.user.service;
 
+import com.uz.taxi.samarkand_tashkent.common.exception.ApiException;
 import com.uz.taxi.samarkand_tashkent.config.JwtService;
 import com.uz.taxi.samarkand_tashkent.domain.user.dto.AuthResponse;
 import com.uz.taxi.samarkand_tashkent.domain.user.dto.LoginRequest;
@@ -7,6 +8,7 @@ import com.uz.taxi.samarkand_tashkent.domain.user.dto.RegisterRequest;
 import com.uz.taxi.samarkand_tashkent.domain.user.entity.User;
 import com.uz.taxi.samarkand_tashkent.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +26,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByPhone(request.getPhone())) {
-            throw new RuntimeException("Phone already registered: " + request.getPhone());
+            throw new ApiException("Phone already registered", HttpStatus.CONFLICT);
         }
 
         User user = User.builder()
@@ -64,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
         );
 
         User user = userRepository.findByPhone(request.getPhone())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.NOT_FOUND));
 
         var userDetails = org.springframework.security.core.userdetails.User.builder()
                 .username(user.getPhone())

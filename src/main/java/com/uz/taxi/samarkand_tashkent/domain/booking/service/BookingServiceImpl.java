@@ -1,5 +1,6 @@
 package com.uz.taxi.samarkand_tashkent.domain.booking.service;
 
+import com.uz.taxi.samarkand_tashkent.common.exception.ApiException;
 import com.uz.taxi.samarkand_tashkent.domain.booking.entity.Booking;
 import com.uz.taxi.samarkand_tashkent.domain.booking.repository.BookingRepository;
 import com.uz.taxi.samarkand_tashkent.domain.trip.entity.Trip;
@@ -7,6 +8,7 @@ import com.uz.taxi.samarkand_tashkent.domain.trip.repository.TripRepository;
 import com.uz.taxi.samarkand_tashkent.domain.user.entity.User;
 import com.uz.taxi.samarkand_tashkent.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,11 +31,11 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new RuntimeException("Trip not found"));
 
         if (trip.getStatus() != Trip.Status.SCHEDULED) {
-            throw new RuntimeException("Trip is not available");
+            throw new ApiException("Trip not found", HttpStatus.NOT_FOUND);
         }
 
         if (trip.getAvailableSeats() < seatsCount) {
-            throw new RuntimeException("Not enough seats. Available: " + trip.getAvailableSeats());
+            throw new ApiException("Not enough seats. Available: " + trip.getAvailableSeats(), HttpStatus.CONFLICT);
         }
 
         User passenger = userRepository.findById(passengerId)
@@ -78,11 +80,11 @@ public class BookingServiceImpl implements BookingService {
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         if (!booking.getPassenger().getId().equals(passengerId)) {
-            throw new RuntimeException("Not your booking");
+            throw new ApiException("Not your booking", HttpStatus.FORBIDDEN);
         }
 
         if (booking.getStatus() == Booking.Status.CANCELLED) {
-            throw new RuntimeException("Already cancelled");
+            throw new ApiException("Already cancelled",HttpStatus.NOT_FOUND);
         }
 
         Trip trip = booking.getTrip();
