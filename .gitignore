@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+compose.yaml
+application-prod.yml
+.env
