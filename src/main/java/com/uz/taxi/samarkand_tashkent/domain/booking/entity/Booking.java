@@ -5,12 +5,20 @@ import com.uz.taxi.samarkand_tashkent.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "bookings")
+@Table(
+        name = "bookings",
+        indexes = {
+                @Index(name = "idx_booking_passenger", columnList = "passenger_id"),
+                @Index(name = "idx_booking_trip", columnList = "trip_id"),
+                @Index(name = "idx_booking_status", columnList = "status")
+        }
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -51,6 +59,7 @@ public class Booking {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 

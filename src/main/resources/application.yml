@@ -38,3 +38,15 @@ app:
     secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
     expiration: 86400000
     refresh-expiration: 604800000
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173,http://localhost:4173
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
