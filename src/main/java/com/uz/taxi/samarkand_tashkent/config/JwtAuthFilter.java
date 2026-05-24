@@ -104,8 +104,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 || path.equals("/api/auth/login")
                 || path.equals("/error")
                 || path.startsWith("/swagger")
-                || path.startsWith("/v3/api-docs")
-                || (path.startsWith("/api/trips") && !path.contains("/my"));
+                || path.startsWith("/v3/api-docs");
     }
 
     /**

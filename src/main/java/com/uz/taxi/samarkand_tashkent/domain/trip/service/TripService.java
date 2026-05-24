@@ -1,5 +1,6 @@
 package com.uz.taxi.samarkand_tashkent.domain.trip.service;
 
+import com.uz.taxi.samarkand_tashkent.domain.trip.dto.TripResponse;
 import com.uz.taxi.samarkand_tashkent.domain.trip.entity.Trip;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,4 +29,6 @@ public interface TripService {
 
     Trip update(Trip trip);
     void cancel(Long id);
+
+    TripResponse completeTrip(Long tripId, String driverPhone);
 }

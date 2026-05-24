@@ -1,6 +1,7 @@
 package com.uz.taxi.samarkand_tashkent.domain.trip.service;
 
 import com.uz.taxi.samarkand_tashkent.common.exception.ApiException;
+import com.uz.taxi.samarkand_tashkent.domain.trip.dto.TripResponse;
 import com.uz.taxi.samarkand_tashkent.domain.trip.entity.Trip;
 import com.uz.taxi.samarkand_tashkent.domain.trip.repository.TripRepository;
 import lombok.RequiredArgsConstructor;
@@ -89,4 +90,29 @@ public class TripServiceImpl implements TripService {
         trip.setStatus(Trip.Status.CANCELLED);
         tripRepository.save(trip);
     }
+
+    @Override
+    @Transactional
+    public TripResponse completeTrip(Long tripId, String driverPhone) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ApiException("Trip not found", HttpStatus.NOT_FOUND));
+
+        // Проверяем что это рейс именно этого водителя
+        if (!trip.getDriver().getPhone().equals(driverPhone)) {
+            throw new ApiException("You can only complete your own trips", HttpStatus.FORBIDDEN);
+        }
+
+        if (trip.getStatus() == Trip.Status.COMPLETED) {
+            throw new ApiException("Trip is already completed", HttpStatus.BAD_REQUEST);
+        }
+        if (trip.getStatus() == Trip.Status.CANCELLED) {
+            throw new ApiException("Cannot complete cancelled trip", HttpStatus.BAD_REQUEST);
+        }
+
+        trip.setStatus(Trip.Status.COMPLETED);
+        Trip saved = tripRepository.save(trip);
+
+        return TripResponse.from(saved);
+    }
+
 }

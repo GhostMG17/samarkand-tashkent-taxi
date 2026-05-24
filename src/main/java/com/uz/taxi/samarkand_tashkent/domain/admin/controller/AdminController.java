@@ -103,4 +103,26 @@ public class AdminController {
     public ResponseEntity<StatsResponse> getStats() {
         return ResponseEntity.ok(adminService.getStats());
     }
+
+
+    @PatchMapping("/trips/{id}/cancel")
+    public ResponseEntity<TripResponse> cancelTrip(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.cancelTrip(id));
+    }
+
+    @PatchMapping("/bookings/{id}/cancel")
+    public ResponseEntity<BookingResponse> cancelBooking(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.cancelBooking(id));
+    }
+
+    @PatchMapping("/bookings/{id}/mark-paid")
+    public ResponseEntity<BookingResponse> markBookingAsPaid(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.markBookingAsPaid(id));
+    }
+
+    @PatchMapping("/trips/{id}/complete")
+    public ResponseEntity<TripResponse> completeTrip(@PathVariable Long id) {
+        return ResponseEntity.ok(adminService.completeTrip(id));
+    }
+
 }

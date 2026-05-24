@@ -112,4 +112,13 @@ public class TripController {
         tripService.cancel(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/complete")
+    public ResponseEntity<TripResponse> completeTrip(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
+        return ResponseEntity.ok(tripService.completeTrip(id, userDetails.getUsername()));
+    }
+
 }

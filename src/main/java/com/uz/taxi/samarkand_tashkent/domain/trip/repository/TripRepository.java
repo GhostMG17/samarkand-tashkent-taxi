@@ -80,4 +80,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
         """)
     List<Object[]> findTopDriversByTripCount(Pageable pageable);
 
+    @Query("SELECT t FROM Trip t WHERE t.status = com.uz.taxi.samarkand_tashkent.domain.trip.entity.Trip.Status.SCHEDULED AND t.departureTime < :cutoff")
+    List<Trip> findOldScheduledTrips(@Param("cutoff") LocalDateTime cutoff);
 }

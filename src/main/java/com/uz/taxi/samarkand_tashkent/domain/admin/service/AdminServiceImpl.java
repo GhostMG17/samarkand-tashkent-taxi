@@ -15,12 +15,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import com.uz.taxi.samarkand_tashkent.domain.trip.dto.TripResponse;
+import com.uz.taxi.samarkand_tashkent.domain.booking.dto.BookingResponse;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 @Service
 @RequiredArgsConstructor
@@ -146,4 +146,105 @@ public class AdminServiceImpl implements AdminService {
                 .topDrivers(topDrivers)
                 .build();
     }
+
+
+    @Override
+    @Transactional
+    public TripResponse cancelTrip(Long tripId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ApiException("Trip not found", HttpStatus.NOT_FOUND));
+
+        if (trip.getStatus() == Trip.Status.CANCELLED) {
+            throw new ApiException("Trip is already cancelled", HttpStatus.BAD_REQUEST);
+        }
+        if (trip.getStatus() == Trip.Status.COMPLETED) {
+            throw new ApiException("Cannot cancel completed trip", HttpStatus.BAD_REQUEST);
+        }
+
+        // Отменяем все активные брони на этом рейсе
+        List<Booking> activeBookings = bookingRepository
+                .findByTripIdAndStatus(tripId, Booking.Status.CONFIRMED);
+        for (Booking b : activeBookings) {
+            b.setStatus(Booking.Status.CANCELLED);
+        }
+        bookingRepository.saveAll(activeBookings);
+
+        trip.setStatus(Trip.Status.CANCELLED);
+        Trip saved = tripRepository.save(trip);
+
+        // Принудительно инициализируем driver внутри транзакции
+        saved.getDriver().getFirstName();
+
+        return TripResponse.from(saved);
+    }
+
+    @Override
+    @Transactional
+    public BookingResponse cancelBooking(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ApiException("Booking not found", HttpStatus.NOT_FOUND));
+
+        if (booking.getStatus() == Booking.Status.CANCELLED) {
+            throw new ApiException("Booking is already cancelled", HttpStatus.BAD_REQUEST);
+        }
+
+        Trip trip = booking.getTrip();
+        if (trip != null && trip.getStatus() == Trip.Status.SCHEDULED) {
+            trip.setAvailableSeats(trip.getAvailableSeats() + booking.getSeatsCount());
+            tripRepository.save(trip);
+        }
+
+        booking.setStatus(Booking.Status.CANCELLED);
+        Booking saved = bookingRepository.save(booking);
+
+        // Инициализируем lazy связи внутри транзакции
+        saved.getPassenger().getFirstName();
+        saved.getTrip().getDriver().getFirstName();
+
+        return BookingResponse.from(saved);
+    }
+
+    @Override
+    @Transactional
+    public BookingResponse markBookingAsPaid(Long bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new ApiException("Booking not found", HttpStatus.NOT_FOUND));
+
+        if (booking.getStatus() == Booking.Status.CANCELLED) {
+            throw new ApiException("Cannot mark cancelled booking as paid", HttpStatus.BAD_REQUEST);
+        }
+        if (booking.getPaymentStatus() == Booking.PaymentStatus.PAID) {
+            throw new ApiException("Booking is already paid", HttpStatus.BAD_REQUEST);
+        }
+
+        booking.setPaymentStatus(Booking.PaymentStatus.PAID);
+        Booking saved = bookingRepository.save(booking);
+
+        saved.getPassenger().getFirstName();
+        saved.getTrip().getDriver().getFirstName();
+
+        return BookingResponse.from(saved);
+    }
+
+
+    @Override
+    @Transactional
+    public TripResponse completeTrip(Long tripId) {
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ApiException("Trip not found", HttpStatus.NOT_FOUND));
+
+        if (trip.getStatus() == Trip.Status.COMPLETED) {
+            throw new ApiException("Trip is already completed", HttpStatus.BAD_REQUEST);
+        }
+        if (trip.getStatus() == Trip.Status.CANCELLED) {
+            throw new ApiException("Cannot complete cancelled trip", HttpStatus.BAD_REQUEST);
+        }
+
+        trip.setStatus(Trip.Status.COMPLETED);
+        Trip saved = tripRepository.save(trip);
+
+        saved.getDriver().getFirstName(); // принудительная инициализация
+        return TripResponse.from(saved);
+    }
+
 }

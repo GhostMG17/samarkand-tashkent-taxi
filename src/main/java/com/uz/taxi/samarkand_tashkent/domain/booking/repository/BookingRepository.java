@@ -90,4 +90,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
         """)
     BigDecimal calculateRevenueAfter(@Param("from") LocalDateTime from);
 
+    List<Booking> findByTripIdAndStatus(Long tripId, Booking.Status status);
+
 }

@@ -6,6 +6,8 @@ import com.uz.taxi.samarkand_tashkent.domain.trip.entity.Trip;
 import com.uz.taxi.samarkand_tashkent.domain.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import com.uz.taxi.samarkand_tashkent.domain.trip.dto.TripResponse;
+import com.uz.taxi.samarkand_tashkent.domain.booking.dto.BookingResponse;
 
 public interface AdminService {
 
@@ -23,4 +25,9 @@ public interface AdminService {
 
     // Stats
     StatsResponse getStats();
+
+    TripResponse cancelTrip(Long tripId);
+    BookingResponse cancelBooking(Long bookingId);
+    BookingResponse markBookingAsPaid(Long bookingId);
+    TripResponse completeTrip(Long tripId);
 }
